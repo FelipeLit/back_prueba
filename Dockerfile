@@ -8,15 +8,15 @@ EXPOSE 443
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copiar archivos del proyecto y restaurar dependencias
-COPY backend.csproj backend/
+# Copiar solo el archivo de proyecto para restaurar dependencias
+COPY backend/backend.csproj backend/
+WORKDIR /src/backend
 RUN dotnet restore "backend.csproj"
 
-# Copiar el resto del código fuente y compilar
-COPY . .
-WORKDIR "/src/backend"
+# Copiar todo el código fuente
+COPY backend/ backend/
 
-# Definir configuración de compilación con un argumento (por defecto Release)
+# Definir configuración de compilación (por defecto Release)
 ARG BUILD_CONFIGURATION=Release
 RUN dotnet build "backend.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
