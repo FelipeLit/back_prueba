@@ -9,8 +9,8 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 # Copiar archivos del proyecto y restaurar dependencias
-COPY backend/backend.csproj backend/
-RUN dotnet restore "backend/backend.csproj"
+COPY backend.csproj backend/
+RUN dotnet restore "backend.csproj"
 
 # Copiar el resto del código fuente y compilar
 COPY . .
