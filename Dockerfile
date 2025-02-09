@@ -1,23 +1,33 @@
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+# Imagen base para la aplicación en tiempo de ejecución
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
-# This stage is used to build the service project
-FROM mcr.microsoft.com/dotnet/sdk:8.0-nanoserver-1809 AS build
+# Etapa de compilación
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
-COPY ["backend/backend.csproj", "backend/"]
-RUN dotnet restore "./backend/./backend.csproj"
+
+# Copiar archivos del proyecto y restaurar dependencias
+COPY backend/backend.csproj backend/
+RUN dotnet restore "backend/backend.csproj"
+
+# Copiar el resto del código fuente y compilar
 COPY . .
 WORKDIR "/src/backend"
-RUN dotnet build "./backend.csproj" -c %BUILD_CONFIGURATION% -o /app/build
 
-# This stage is used to publish the service project to be copied to the final stage
+# Definir configuración de compilación con un argumento (por defecto Release)
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet build "backend.csproj" -c $BUILD_CONFIGURATION -o /app/build
+
+# Etapa de publicación
 FROM build AS publish
-RUN dotnet publish "./backend.csproj" -c %BUILD_CONFIGURATION% -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "backend.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-# This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
+# Imagen final con la aplicación publicada
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+
+# Definir el punto de entrada
 ENTRYPOINT ["dotnet", "backend.dll"]
