@@ -9,12 +9,11 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 # Copiar solo el archivo de proyecto para restaurar dependencias
-COPY backend/backend.csproj backend/
-WORKDIR /src/backend
+COPY backend.csproj ./
 RUN dotnet restore "backend.csproj"
 
 # Copiar todo el código fuente
-COPY backend/ backend/
+COPY . . 
 
 # Definir configuración de compilación (por defecto Release)
 ARG BUILD_CONFIGURATION=Release
@@ -31,3 +30,4 @@ COPY --from=publish /app/publish .
 
 # Definir el punto de entrada
 ENTRYPOINT ["dotnet", "backend.dll"]
+
